@@ -1,0 +1,72 @@
+{% extends 'admin/layout.html' %}
+
+{% block header_title %}Doctor Management{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">All Doctors</h3>
+        <div class="relative">
+            <input type="text" placeholder="Search doctors..." class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+            <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                    <th class="p-4 font-medium">Name</th>
+                    <th class="p-4 font-medium">Specialization</th>
+                    <th class="p-4 font-medium">Experience</th>
+                    <th class="p-4 font-medium">Status</th>
+                    <th class="p-4 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                {% for doctor in doctors %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td class="p-4 text-sm font-medium text-gray-900 dark:text-white flex items-center gap-3">
+                        <img src="{{ url_for('auth.serve_upload', filename=doctor.profile_image) if doctor.profile_image else 'https://ui-avatars.com/api/?name='+doctor.user.name }}" class="w-8 h-8 rounded-full object-cover">
+                        <div>
+                            <p>{{ doctor.user.name }}</p>
+                            <p class="text-xs text-gray-500 font-normal">{{ doctor.user.email }}</p>
+                        </div>
+                    </td>
+                    <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ doctor.specialization }}</td>
+                    <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ doctor.experience }} Years</td>
+                    <td class="p-4 text-sm">
+                        {% if doctor.approved %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Active</span>
+                        {% else %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Suspended</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-sm text-right space-x-2">
+                        <form action="{{ url_for('admin.approve_doctor', doctor_id=doctor.id) }}" method="POST" class="inline">
+                            {% if doctor.approved %}
+                            <button type="submit" class="text-amber-600 hover:text-amber-900 dark:text-amber-500 dark:hover:text-amber-400 transition-colors p-1" title="Suspend Doctor">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                            {% else %}
+                            <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-500 dark:hover:text-green-400 transition-colors p-1" title="Activate Doctor">
+                                <i class="fa-solid fa-check-circle"></i>
+                            </button>
+                            {% endif %}
+                        </form>
+                        <form action="{{ url_for('admin.delete_doctor', doctor_id=doctor.id) }}" method="POST" class="inline" onsubmit="return confirm('Delete this doctor?');">
+                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400 transition-colors p-1" title="Delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">No doctors found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

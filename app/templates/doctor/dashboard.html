@@ -1,0 +1,238 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+{% block dashboard_title %}Welcome, Dr. {{ current_user.name }}{% endblock %}
+
+
+
+{% block sidebar_menu %}
+<a href="{{ url_for('doctor.dashboard') }}" class="list-group-item list-group-item-action active py-3 px-4"><i class="fa-solid fa-house fa-fw me-3"></i> Overview</a>
+<a href="{{ url_for('doctor.appointments') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-calendar-check fa-fw me-3"></i> Manage Appointments</a>
+<a href="{{ url_for('doctor.profile') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-user-doctor fa-fw me-3"></i> My Profile</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 w-full mt-4">
+    <!-- Today's Visits -->
+    <div class="glass relative overflow-hidden rounded-[1.25rem] p-6 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-800 border-t-4 border-blue-500">
+        <div class="absolute -right-6 -top-6 text-blue-500/5 group-hover:text-blue-500/10 transition-colors duration-500">
+            <i class="fa-solid fa-calendar-day text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Today's Visits</h3>
+            <div class="flex items-baseline space-x-2 my-2">
+                <span class="text-6xl font-black text-blue-600 dark:text-blue-400" data-counter="{{ today_count }}">0</span>
+            </div>
+            <a href="{{ url_for('doctor.appointments') }}" class="mt-4 inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-500 transition-colors w-max">
+                View Schedule <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Pending Requests -->
+    <div class="glass relative overflow-hidden rounded-[1.25rem] p-6 hover:-translate-y-2 hover:shadow-2xl transition duration-300 group bg-white dark:bg-gray-800 border-t-4 border-yellow-500 shadow-lg">
+        <div class="absolute -right-6 -top-6 text-yellow-500/5 group-hover:text-yellow-500/10 transition-colors duration-500">
+            <i class="fa-solid fa-bell text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Pending Requests</h3>
+            <div class="flex items-baseline space-x-2 my-2">
+                <span class="text-6xl font-black text-yellow-500 dark:text-yellow-400" data-counter="{{ pending_count }}">0</span>
+            </div>
+            <a href="{{ url_for('doctor.appointments') }}#pending" class="mt-4 inline-flex items-center text-sm font-semibold text-yellow-600 hover:text-yellow-500 transition-colors w-max">
+                Review Requests <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Total Completed -->
+    <div class="glass relative overflow-hidden rounded-[1.25rem] p-6 hover:-translate-y-2 hover:shadow-2xl transition duration-300 group bg-white dark:bg-gray-800 border-t-4 border-green-500">
+        <div class="absolute -right-6 -top-6 text-green-500/5 group-hover:text-green-500/10 transition-colors duration-500">
+            <i class="fa-solid fa-check-double text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Total Completed</h3>
+            <div class="flex items-baseline space-x-2 my-2">
+                <span class="text-6xl font-black text-green-500 dark:text-green-400" data-counter="{{ completed_count }}">0</span>
+            </div>
+            <a href="{{ url_for('doctor.appointments') }}" class="mt-4 inline-flex items-center text-sm font-semibold text-green-600 hover:text-green-500 transition-colors w-max">
+                Patient History <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+    <!-- Pending Requests List -->
+    <div class="lg:col-span-2 glass bg-white dark:bg-gray-800 rounded-[1.25rem] p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white"><i class="fa-solid fa-clock text-accent mr-2"></i> Pending Actions</h3>
+            <a href="{{ url_for('doctor.appointments') }}" class="text-primary dark:text-primary-light text-sm font-semibold hover:underline border border-primary/20 bg-primary/5 px-4 py-1.5 rounded-full">View All</a>
+        </div>
+        
+        <div class="flex-1 w-full">
+            {% if recent_pending %}
+            <div class="space-y-4">
+                {% for appt in recent_pending %}
+                <div class="bg-gray-50 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-750 hover:shadow-md rounded-[1rem] p-4 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-yellow-400"></div>
+                    <div class="flex items-center gap-4 pl-2">
+                        <img src="https://ui-avatars.com/api/?name={{ appt.patient.user.name }}&background=fef3c7&color=b45309&size=48&bold=true" class="rounded-full shadow-sm w-12 h-12 border border-yellow-200 dark:border-yellow-800" alt="Patient">
+                        <div>
+                            <h4 class="font-bold text-gray-900 dark:text-white text-base">{{ appt.patient.user.name }}</h4>
+                            <p class="text-[0.85rem] font-medium text-gray-500 dark:text-gray-400 mt-0.5"><i class="fa-regular fa-calendar text-primary mr-1"></i> {{ appt.date.strftime('%b %d, %Y') }} at {{ appt.time.strftime('%I:%M %p') }}</p>
+                            <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1 font-semibold">Diagnosis Requested</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <form action="{{ url_for('doctor.update_status', appt_id=appt.id, status='Accepted') }}" method="POST">
+                            <button type="submit" class="w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-500 hover:text-white shadow-sm transition-all hover:-translate-y-1" title="Accept">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        </form>
+                        <button type="button" class="w-10 h-10 rounded-full flex items-center justify-center bg-yellow-100 text-yellow-600 hover:bg-yellow-500 hover:text-white shadow-sm transition-all hover:-translate-y-1" data-bs-toggle="modal" data-bs-target="#reschedModal{{ appt.id }}" title="Reschedule">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                        </button>
+                        <form action="{{ url_for('doctor.update_status', appt_id=appt.id, status='Rejected') }}" method="POST">
+                            <button type="submit" class="w-10 h-10 rounded-full flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-500 hover:text-white shadow-sm transition-all hover:-translate-y-1" title="Reject">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Reschedule Modal using Bootstrap JS but Tailwind UI -->
+                <div class="modal fade" id="reschedModal{{ appt.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-2xl rounded-2xl bg-white dark:bg-gray-800 backdrop-blur-xl">
+                        <div class="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
+                        <h5 class="text-lg font-bold text-gray-800 dark:text-white"><i class="fa-solid fa-calendar-days text-accent mr-2"></i>Reschedule</h5>
+                        <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors" data-bs-dismiss="modal"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        </div>
+                        <div class="p-6">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Select a new date and time for <strong class="text-primary dark:text-primary-light">{{ appt.patient.user.name }}</strong>.</p>
+                        <form action="{{ url_for('doctor.reschedule_appointment', appt_id=appt.id) }}" method="POST" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">New Date</label>
+                                <input type="date" name="new_date" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-accent" required min="{{ current_date|default('') }}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">New Time</label>
+                                <input type="time" name="new_time" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-accent" required>
+                            </div>
+                            <div class="pt-4">
+                                <button type="submit" class="w-full bg-accent hover:bg-yellow-500 text-white font-bold py-3 rounded-xl shadow-md transition-colors">Confirm Reschedule</button>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-10 flex flex-col items-center justify-center h-full">
+                <i class="fa-solid fa-clipboard-check text-green-400 border-[3px] border-green-200 bg-green-50 dark:bg-green-900/30 dark:border-green-800/50 p-6 rounded-full text-5xl mb-5 shadow-inner"></i>
+                <h4 class="text-gray-800 dark:text-white font-bold text-xl">You're all caught up!</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-sm">There are currently no actions waiting for your approval. Check back later.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Chart -->
+    <div class="glass bg-white dark:bg-gray-800 rounded-[1.25rem] p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-700 pb-4"><i class="fa-solid fa-chart-pie text-green-500 mr-2"></i> Patient Demographics</h3>
+        <div class="relative h-[250px] w-full flex items-center justify-center">
+            <canvas id="doctorStatusChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Animated Counters
+    const counters = document.querySelectorAll('[data-counter]');
+    counters.forEach(counter => {
+        const target = +counter.getAttribute('data-counter');
+        if(target === 0) {
+            counter.innerText = '0';
+            return;
+        }
+        const duration = 1500;
+        const increment = target / (duration / 16);
+        let current = 0;
+        const updateCounter = () => {
+            current += increment;
+            if(current < target) {
+                counter.innerText = Math.ceil(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.innerText = target;
+            }
+        };
+        updateCounter();
+    });
+
+    // Chart.js Setup
+    const rawLabels = {{ chart_labels | tojson | safe }};
+    const rawData = {{ chart_data | tojson | safe }};
+    const isDark = document.body.dataset.theme === 'dark' || document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#9ca3af' : '#4b5563';
+
+    const sum = rawData.reduce((a, b) => a + b, 0);
+    const renderLabels = sum > 0 ? rawLabels : ['No Data'];
+    const renderData = sum > 0 ? rawData : [1];
+    const bgColors = sum > 0 ? ['#22c55e', '#facc15', '#0ea5e9', '#ef4444'] : ['#e5e7eb'];
+
+    const ctx = document.getElementById('doctorStatusChart');
+    if(ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: renderLabels,
+                datasets: [{
+                    data: renderData,
+                    backgroundColor: bgColors,
+                    borderWidth: 0,
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor,
+                            font: { family: "'Inter', sans-serif", weight: '600', size: 12 },
+                            padding: 24,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        enabled: sum > 0,
+                        backgroundColor: isDark ? '#1f2937' : 'white',
+                        titleColor: isDark ? 'white' : 'black',
+                        bodyColor: isDark ? '#d1d5db' : '#4b5563',
+                        borderColor: isDark ? '#374151' : '#f3f4f6',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        displayColors: true,
+                        cornerRadius: 8
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

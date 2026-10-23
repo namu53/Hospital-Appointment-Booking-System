@@ -1,0 +1,75 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+{% block dashboard_title %}Registered Users{% endblock %}
+
+
+
+{% block sidebar_menu %}
+<a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gauge fa-fw me-2"></i> Analytics Dashboard</a>
+<a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action border-0 active py-3"><i class="fa-solid fa-users fa-fw me-2"></i> All Users</a>
+<a href="{{ url_for('admin.doctors') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-user-doctor fa-fw me-2"></i> Doctor Approvals</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden fade-in-section is-visible">
+    <div class="card-header bg-white py-4 px-4 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-users text-primary me-2"></i> All Registered Accounts</h5>
+        
+        <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" class="form-control bg-light border-start-0 ps-0" placeholder="Search users...">
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4 py-3 font-weight-bold">ID</th>
+                        <th class="py-3 font-weight-bold">Account Holder</th>
+                        <th class="py-3 font-weight-bold">Email Address</th>
+                        <th class="py-3 font-weight-bold">Role Hierarchy</th>
+                        <th class="pe-4 py-3 font-weight-bold text-end">Account Status</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    {% for user in users %}
+                    <tr>
+                        <td class="ps-4 py-3 text-muted">#{{ user.id }}</td>
+                        <td class="py-3">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ user.name }}&background=random&color=fff&size=40" class="rounded-circle me-3" alt="Avatar">
+                                <span class="fw-bold text-dark">{{ user.name }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 text-muted"><i class="fa-regular fa-envelope me-2 opacity-50"></i>{{ user.email }}</td>
+                        <td class="py-3">
+                            {% if user.role == 'admin' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2 rounded-pill shadow-sm"><i class="fa-solid fa-shield-halved me-1"></i> Admin</span>
+                            {% elif user.role == 'doctor' %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill shadow-sm"><i class="fa-solid fa-user-doctor me-1"></i> Doctor</span>
+                            {% else %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 rounded-pill shadow-sm"><i class="fa-solid fa-hospital-user me-1"></i> Patient</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 py-3 text-end">
+                            <span class="badge bg-success bg-opacity-10 text-success shadow-sm rounded-pill px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i> Active</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="text-muted mb-3"><i class="fa-solid fa-users-slash fa-3x opacity-25"></i></div>
+                            <h5 class="fw-bold text-muted">No users found</h5>
+                            <p class="text-muted small">The database is currently empty.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

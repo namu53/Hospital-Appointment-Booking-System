@@ -1,0 +1,80 @@
+{% extends 'admin/layout.html' %}
+
+{% block header_title %}Patient Details{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <a href="{{ url_for('admin.patients') }}" class="text-gray-500 hover:text-blue-600 transition-colors">
+            <i class="fa-solid fa-arrow-left me-2"></i> Back to Patients
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Profile Card -->
+    <div class="md:col-span-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden text-center p-6">
+            <div class="mb-4">
+                {% if patient.profile_image %}
+                <img src="{{ url_for('static', filename=patient.profile_image) }}" alt="Profile Picture" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-blue-100 dark:border-blue-900 shadow">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ patient.user.name }}&background=e5e7eb&color=374151&size=128" alt="Profile Picture" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-gray-100 dark:border-gray-700 shadow">
+                {% endif %}
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ patient.user.name }}</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">{{ patient.user.email }}</p>
+            
+            <div class="flex flex-wrap justify-center gap-2 mb-6">
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold rounded-full">Patient ID: #{{ patient.id }}</span>
+                {% if patient.blood_group %}
+                <span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs font-semibold rounded-full"><i class="fa-solid fa-droplet me-1"></i> {{ patient.blood_group }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Details Card -->
+    <div class="md:col-span-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden h-full">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white"><i class="fa-solid fa-clipboard-user text-blue-500 me-2"></i> Comprehensive Information</h4>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                    
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Date of Birth</p>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ patient.date_of_birth.strftime('%B %d, %Y') if patient.date_of_birth else 'Not provided' }}</p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Age & Gender</p>
+                        <p class="text-gray-900 dark:text-white font-medium">
+                            {% if patient.age %}{{ patient.age }} yrs{% else %}-{% endif %} / 
+                            {% if patient.gender %}{{ patient.gender }}{% else %}Not specified{% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Primary Phone</p>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ patient.phone or patient.contact or 'Not provided' }}</p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Emergency Contact</p>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ patient.emergency_contact or 'Not provided' }}</p>
+                    </div>
+                    
+                    <div class="md:col-span-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Residential Address</p>
+                        <p class="text-gray-900 dark:text-white font-medium bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">{{ patient.address or 'No address provided.' }}</p>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

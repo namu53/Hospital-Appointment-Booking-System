@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% set hide_navbar = True %}
+{% set hide_footer = True %}
+
+{% block title %}Login - HospiCare{% endblock %}
+
+{% block wrapper %}
+<div class="auth-split">
+    <!-- Left Side: Image -->
+    <div class="auth-image">
+        <div class="h-100 d-flex flex-column justify-content-end p-5" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+            <div class="text-white mb-5 fade-in-section is-visible">
+                <a href="{{ url_for('auth.index') }}" class="text-white text-decoration-none h3 fw-bold mb-4 d-block"><i class="fa-solid fa-heart-pulse text-primary"></i> HospiCare</a>
+                <h2 class="display-5 fw-bold mb-3">Welcome Back!</h2>
+                <p class="lead opacity-75">Log in to manage your appointments and health records securely.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Side: Form -->
+    <div class="auth-form-container">
+        <div class="auth-card fade-in-section is-visible">
+            
+            <div class="text-center mb-4 d-lg-none">
+                <a href="{{ url_for('auth.index') }}" class="text-dark text-decoration-none h3 fw-bold"><i class="fa-solid fa-heart-pulse text-primary"></i> HospiCare</a>
+            </div>
+
+            <h3 class="fw-bold mb-2">Sign In</h3>
+            <p class="text-muted mb-4">Please enter your credentials to access your account.</p>
+
+            <form method="POST" action="" class="needs-validation" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label fw-semibold small text-muted") }}
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent text-muted"><i class="fa-regular fa-envelope"></i></span>
+                        {% if form.email.errors %}
+                            {{ form.email(class="form-control is-invalid", placeholder="name@example.com") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.email(class="form-control", placeholder="name@example.com", required=True) }}
+                            <div class="invalid-feedback">Please enter a valid email.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between">
+                        {{ form.password.label(class="form-label fw-semibold small text-muted") }}
+                        <a href="#" class="small text-decoration-none">Forgot password?</a>
+                    </div>
+                    <div class="input-group password-container">
+                        <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-lock"></i></span>
+                        {% if form.password.errors %}
+                            {{ form.password(class="form-control password-input is-invalid", placeholder="••••••••") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.password(class="form-control password-input", placeholder="••••••••", required=True) }}
+                            <div class="invalid-feedback">Please enter your password.</div>
+                        {% endif %}
+                        <i class="fa-regular fa-eye password-toggle" id="togglePassword"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-4 form-check">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label small text-muted") }}
+                </div>
+                
+                <div class="d-grid mb-4">
+                    {{ form.submit(class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-2") }}
+                </div>
+            </form>
+            
+            <p class="text-center text-muted small">
+                Don't have an account? <a href="{{ url_for('auth.register') }}" class="fw-bold text-decoration-none">Create one</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

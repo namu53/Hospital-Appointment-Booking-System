@@ -1,0 +1,211 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+{% block dashboard_title %}My Dashboard{% endblock %}
+
+{% block sidebar_menu %}
+<a href="{{ url_for('patient.dashboard') }}" class="list-group-item list-group-item-action active py-3 px-4"><i class="fa-solid fa-house fa-fw me-3"></i> Overview</a>
+<a href="{{ url_for('patient.edit_profile') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-user-pen fa-fw me-3"></i> Edit Profile</a>
+<a href="{{ url_for('patient.find_doctors') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-stethoscope fa-fw me-3"></i> Find Doctors</a>
+<a href="{{ url_for('patient.my_appointments') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-calendar-check fa-fw me-3"></i> My Appointments</a>
+<a href="{{ url_for('patient.documents') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-file-medical fa-fw me-3"></i> Medical Documents</a>
+<a href="{{ url_for('patient.prescriptions') }}" class="list-group-item list-group-item-action py-3 px-4"><i class="fa-solid fa-pills fa-fw me-3"></i> Prescriptions</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 w-full mt-4">
+    <!-- Upcoming Visits -->
+    <div class="glass relative overflow-hidden rounded-[1.25rem] p-6 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-800">
+        <div class="absolute -right-6 -top-6 text-primary/5 dark:text-white/5 group-hover:text-primary/10 transition-colors duration-500">
+            <i class="fa-solid fa-calendar-check text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Upcoming Visits</h3>
+            <div class="flex items-baseline space-x-2 my-2">
+                <span class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary-dark to-primary-light" data-counter="{{ upcoming_count }}">0</span>
+            </div>
+            <a href="{{ url_for('patient.my_appointments') }}" class="mt-4 inline-flex items-center text-sm font-semibold text-primary hover:text-accent transition-colors w-max">
+                View Schedule <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Past Visits -->
+    <div class="glass relative overflow-hidden rounded-[1.25rem] p-6 hover:-translate-y-2 hover:shadow-2xl transition duration-300 group bg-white dark:bg-gray-800">
+        <div class="absolute -right-6 -top-6 text-green-500/5 group-hover:text-green-500/10 transition-colors duration-500">
+            <i class="fa-solid fa-clock-rotate-left text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Past Consultations</h3>
+            <div class="flex items-baseline space-x-2 my-2">
+                <span class="text-6xl font-black text-green-500 dark:text-green-400" data-counter="{{ past_count }}">0</span>
+            </div>
+            <a href="{{ url_for('patient.my_appointments') }}" class="mt-4 inline-flex items-center text-sm font-semibold text-green-600 hover:text-green-500 transition-colors w-max">
+                View History <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Find Doctors -->
+    <div class="glass relative overflow-hidden rounded-[1.25rem] p-6 hover:-translate-y-2 hover:shadow-2xl transition duration-300 group bg-gradient-to-br from-accent to-yellow-600 border-none shadow-lg">
+        <div class="absolute -right-6 -top-6 text-white/10 group-hover:text-white/20 transition-colors duration-500">
+            <i class="fa-solid fa-stethoscope text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-white/80 mb-2">Need a checkup?</h3>
+            <div class="flex flex-col my-2">
+                <span class="text-3xl font-black text-white leading-tight">Book an appointment</span>
+                <span class="text-sm font-medium text-white/80 mt-1">with our top specialists</span>
+            </div>
+            <a href="{{ url_for('patient.find_doctors') }}" class="mt-4 inline-flex items-center text-sm font-bold bg-white text-accent px-4 py-2 rounded-full hover:bg-gray-50 transition-colors w-max shadow-sm">
+                Find Doctors <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+    <!-- Timeline -->
+    <div class="lg:col-span-2 glass bg-white dark:bg-gray-800 rounded-[1.25rem] p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white"><i class="fa-solid fa-bolt text-accent mr-2"></i> Recent Activity</h3>
+            <a href="{{ url_for('patient.find_doctors') }}" class="bg-primary hover:bg-[#0f2027] text-white text-sm py-2 px-4 rounded-full font-semibold transition-all hover:shadow-lg hover:-translate-y-0.5"><i class="fa-solid fa-plus mr-1 text-xs"></i> Book New</a>
+        </div>
+        
+        <div class="flex-1 w-full relative">
+            {% if recent_appointments %}
+            <div class="absolute left-6 top-0 bottom-0 w-[2px] bg-gray-100 dark:bg-gray-700"></div>
+            <div class="space-y-6 relative">
+                {% for appt in recent_appointments %}
+                <div class="relative pl-14 group">
+                    <div class="absolute left-[20px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-[3px] border-white dark:border-gray-800 bg-primary z-10 shadow-sm group-hover:scale-125 transition-transform duration-300"></div>
+                    <div class="bg-gray-50 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-750 hover:shadow-md rounded-xl p-4 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <img src="{{ url_for('static', filename=appt.doctor.profile_image) if appt.doctor.profile_image else 'https://ui-avatars.com/api/?name=Dr+' ~ appt.doctor.user.name ~ '&background=e9ecef&color=495057&size=48&bold=true' }}" class="rounded-full shadow-sm w-12 h-12 object-cover border-2 border-white dark:border-gray-700" alt="Doctor">
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base">Dr. {{ appt.doctor.user.name }}</h4>
+                                <p class="text-[0.8rem] font-medium text-gray-500 dark:text-gray-400 mt-0.5 tracking-wide"><i class="fa-regular fa-calendar text-primary mr-1"></i> {{ appt.date.strftime('%b %d, %Y') }} at {{ appt.time.strftime('%I:%M %p') }}</p>
+                            </div>
+                        </div>
+                        <div>
+                            {% if appt.status == 'Pending' or appt.status == 'Rescheduled' %}
+                                <span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-yellow-200 dark:border-yellow-800/50 flex items-center shadow-sm w-max"><i class="fa-solid fa-hourglass-half mr-1.5"></i> {{ appt.status }}</span>
+                            {% elif appt.status == 'Accepted' %}
+                                <span class="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-green-200 dark:border-green-800/50 flex items-center shadow-sm w-max"><i class="fa-solid fa-check mr-1.5"></i> Accepted</span>
+                            {% elif appt.status in ['Rejected', 'Cancelled'] %}
+                                <span class="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-red-200 dark:border-red-800/50 flex items-center shadow-sm w-max"><i class="fa-solid fa-xmark mr-1.5 text-sm"></i> {{ appt.status }}</span>
+                            {% else %}
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-600 flex items-center shadow-sm w-max">{{ appt.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-10 flex flex-col items-center justify-center h-full">
+                <i class="fa-solid fa-timeline text-gray-200 dark:text-gray-700 text-6xl mb-4"></i>
+                <h4 class="text-gray-500 dark:text-gray-400 font-medium">No recent timeline activity.</h4>
+                <p class="text-sm text-gray-400 mt-2">Book an appointment to see history.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Chart -->
+    <div class="glass bg-white dark:bg-gray-800 rounded-[1.25rem] p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-700 pb-4"><i class="fa-solid fa-chart-pie text-green-500 mr-2"></i> Analytics Overview</h3>
+        <div class="relative h-[250px] w-full flex items-center justify-center">
+            <canvas id="patientAnalytics"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Animated Counters
+    const counters = document.querySelectorAll('[data-counter]');
+    counters.forEach(counter => {
+        const target = +counter.getAttribute('data-counter');
+        if(target === 0) {
+            counter.innerText = '0';
+            return;
+        }
+        const duration = 1500; // ms
+        const increment = target / (duration / 16); // ~60fps
+        let current = 0;
+        const updateCounter = () => {
+            current += increment;
+            if(current < target) {
+                counter.innerText = Math.ceil(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.innerText = target;
+            }
+        };
+        updateCounter();
+    });
+
+    // Chart.js Setup
+    const rawLabels = {{ chart_labels | tojson | safe }};
+    const rawData = {{ chart_data | tojson | safe }};
+    const isDark = document.body.dataset.theme === 'dark' || document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#9ca3af' : '#4b5563';
+
+    // Verify completely empty
+    const sum = rawData.reduce((a, b) => a + b, 0);
+    const renderLabels = sum > 0 ? rawLabels : ['No Data'];
+    const renderData = sum > 0 ? rawData : [1];
+    const bgColors = sum > 0 ? ['#22c55e', '#facc15', '#0ea5e9', '#ef4444'] : ['#e5e7eb'];
+
+    const ctx = document.getElementById('patientAnalytics');
+    if(ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: renderLabels,
+                datasets: [{
+                    data: renderData,
+                    backgroundColor: bgColors,
+                    borderWidth: 0,
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor,
+                            font: { family: "'Inter', sans-serif", weight: '600', size: 12 },
+                            padding: 24,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        enabled: sum > 0,
+                        backgroundColor: isDark ? '#1f2937' : 'white',
+                        titleColor: isDark ? 'white' : 'black',
+                        bodyColor: isDark ? '#d1d5db' : '#4b5563',
+                        borderColor: isDark ? '#374151' : '#f3f4f6',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        displayColors: true,
+                        cornerRadius: 8
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

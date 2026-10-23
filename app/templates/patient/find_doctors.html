@@ -1,0 +1,72 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Find Doctors{% endblock %}
+{% block dashboard_title %}Find & Book Doctors{% endblock %}
+
+{% block sidebar_menu %}
+<a href="{{ url_for('patient.dashboard') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-house fa-fw me-2"></i> Dashboard Overview</a>
+<a href="{{ url_for('patient.find_doctors') }}" class="list-group-item list-group-item-action border-0 active py-3"><i class="fa-solid fa-stethoscope fa-fw me-2"></i> Find Doctors</a>
+<a href="{{ url_for('patient.my_appointments') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-calendar-check fa-fw me-2"></i> My Appointments</a>
+<a href="{{ url_for('patient.documents') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-file-medical fa-fw me-2"></i> Medical Documents</a>
+<a href="{{ url_for('patient.prescriptions') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-pills fa-fw me-2"></i> Prescriptions</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4 fade-in-section is-visible">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm bg-primary text-white p-4 rounded-4" style="background: linear-gradient(135deg, var(--primary-color), #0a58ca);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold mb-2">Our Medical Specialists</h3>
+                    <p class="mb-0 opacity-75">Browse through our directory of highly qualified and experienced doctors.</p>
+                </div>
+                <i class="fa-solid fa-user-doctor fs-1 opacity-50 d-none d-md-block"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter (Visual only for UI demo) -->
+<div class="row mb-4 fade-in-section is-visible" style="transition-delay: 0.1s;">
+    <div class="col-md-8 mb-3 mb-md-0">
+        <div class="input-group input-group-lg shadow-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search doctors by name or specialty...">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select form-select-lg shadow-sm">
+            <option selected>Filter Specialty</option>
+            <option value="Cardiology">Cardiology</option>
+            <option value="Neurology">Neurology</option>
+            <option value="General">General</option>
+        </select>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for doctor in doctors %}
+    <div class="col-lg-4 col-md-6 fade-in-section is-visible" style="transition-delay: 0.{{ loop.index }}s;">
+        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-hover">
+            <div class="bg-light text-center pt-4 pb-3">
+                <img src="https://ui-avatars.com/api/?name=Dr+{{ doctor.user.name }}&background=0D8ABC&color=fff&size=120&bold=true" class="rounded-circle shadow-sm border border-4 border-white" alt="Dr. {{ doctor.user.name }}">
+            </div>
+            <div class="card-body text-center p-4">
+                <h5 class="fw-bold mb-1">Dr. {{ doctor.user.name }}</h5>
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3">{{ doctor.specialization }}</span>
+                <p class="text-muted small mb-4 px-2"><i class="fa-solid fa-certificate text-warning me-1"></i> {{ doctor.experience }} years of clinical experience. Delivering world-class patient care.</p>
+                <div class="d-grid mt-auto">
+                    <a href="{{ url_for('patient.book_appointment', doctor_id=doctor.id) }}" class="btn btn-outline-primary rounded-pill fw-bold shadow-sm py-2"><i class="fa-regular fa-calendar-plus me-2"></i>Book Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 fade-in-section is-visible">
+        <i class="fa-solid fa-user-doctor fa-4x text-muted opacity-25 mb-4"></i>
+        <h4 class="text-muted">No specialists available at the moment.</h4>
+        <p class="text-muted">Please check back later or contact support.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

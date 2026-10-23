@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Health Nest - Medical Management{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <!-- Tailwind CSS (No Preflight to avoid breaking Bootstrap) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            corePlugins: { preflight: false },
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#203a43', dark: '#0f2027', light: '#2c5364' },
+                        accent: '#f5b942'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+            }
+            .nav-link-anim {
+                @apply relative pb-1 text-gray-700 dark:text-gray-200 font-medium transition-colors hover:text-primary
+                       after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    {% if not hide_navbar %}
+    <!-- Modern Sticky Navbar -->
+    <nav class="sticky top-0 z-50 glass border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer hover:opacity-90 transition-opacity" onclick="window.location.href='{{ url_for('auth.index') }}'">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-dark to-primary-light flex items-center justify-center text-white shadow-lg">
+                        <i class="fa-solid fa-leaf text-lg"></i>
+                    </div>
+                    <span class="ml-3 font-bold text-2xl text-primary-dark dark:text-white tracking-tight">Health Nest</span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('auth.index') }}" class="nav-link-anim">Home</a>
+                    {% if current_user.is_authenticated and current_user.role == 'patient' %}
+                        <a href="{{ url_for('patient.my_appointments') }}" class="nav-link-anim">Appointments</a>
+                        <a href="{{ url_for('patient.find_doctors') }}" class="nav-link-anim">Doctors</a>
+                    {% elif current_user.is_authenticated and current_user.role == 'doctor' %}
+                        <a href="{{ url_for('doctor.appointments') }}" class="nav-link-anim">Appointments</a>
+                        <a href="{{ url_for('doctor.dashboard') }}" class="nav-link-anim">Patients</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.analytics') }}" class="nav-link-anim">Analytics</a>
+                    <a href="{{ url_for('auth.contact') }}" class="nav-link-anim">Contact</a>
+                </div>
+
+                <!-- Right Side Actions -->
+                <div class="hidden md:flex items-center space-x-5">
+                    <!-- Notification Bell -->
+                    {% if current_user.is_authenticated %}
+                    <button class="relative p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors">
+                        <i class="fa-regular fa-bell text-xl"></i>
+                        <span class="absolute top-1 right-1 flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                        </span>
+                    </button>
+                    {% endif %}
+
+                    <!-- Dark Mode Toggle -->
+                    <button id="theme-toggle" class="p-2 text-gray-500 dark:text-gray-400 hover:text-accent transition-colors" aria-label="Toggle Dark Mode">
+                        <!-- Icon injected by JS -->
+                    </button>
+
+                    <!-- User Dropdown / Auth Buttons -->
+                    {% if current_user.is_authenticated %}
+                        <div class="relative group dropdown-container">
+                            <button class="flex items-center space-x-3 focus:outline-none" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ url_for('auth.get_profile') }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-[3px] border-white dark:border-gray-800 shadow-sm transition-transform group-hover:scale-105">
+                                <div class="hidden lg:block text-left">
+                                    <p class="text-sm font-semibold text-gray-800 dark:text-white leading-tight">{{ current_user.name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium tracking-wide placeholder-role capitalize">{{ current_user.role }}</p>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+                            </button>
+                            
+                            <!-- Dropdown Menu (Bootstrap handled but styled with Tailwind) -->
+                            <ul class="dropdown-menu absolute right-0 mt-3 w-56 rounded-xl shadow-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 py-2 hidden" aria-labelledby="userMenuBtn">
+                                <li>
+                                    {% if current_user.role == 'admin' %}
+                                        <a href="{{ url_for('admin.dashboard') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-primary transition-colors"><i class="fa-solid fa-gauge w-5 text-gray-400"></i> Dashboard</a>
+                                    {% elif current_user.role == 'doctor' %}
+                                        <a href="{{ url_for('doctor.dashboard') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-primary transition-colors"><i class="fa-solid fa-gauge w-5 text-gray-400"></i> Dashboard</a>
+                                    {% else %}
+                                        <a href="{{ url_for('patient.dashboard') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-primary transition-colors"><i class="fa-solid fa-gauge w-5 text-gray-400"></i> Dashboard</a>
+                                    {% endif %}
+                                </li>
+                                <li><hr class="border-gray-100 dark:border-gray-700 my-1"></li>
+                                <li><a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i class="fa-solid fa-right-from-bracket w-5"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary transition-colors px-3 py-2">Log In</a>
+                        <a href="{{ url_for('auth.register') }}" class="text-sm font-semibold bg-accent hover:bg-yellow-500 text-white px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">Sign Up</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center md:hidden gap-4">
+                    <button class="text-gray-500 dark:text-gray-400" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="collapse md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800" id="mobileMenu">
+            <div class="px-4 pt-2 pb-4 space-y-1">
+                <a href="{{ url_for('auth.index') }}" class="block px-3 py-3 rounded-lg text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800">Home</a>
+                <a href="{{ url_for('auth.analytics') }}" class="block px-3 py-3 rounded-lg text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800">Analytics</a>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.login') }}" class="block px-3 py-3 rounded-lg text-base font-medium text-primary dark:text-primary-light bg-primary/5">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Toast Notifications -->
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050; margin-top: 80px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-lg border-0 rounded-3" role="alert" style="min-width: 320px;">
+                        <div class="d-flex align-items-center">
+                            {% if category == 'success' %}<i class="fa-solid fa-circle-check fs-4 me-3 text-success"></i>
+                            {% elif category == 'danger' %}<i class="fa-solid fa-circle-xmark fs-4 me-3 text-danger"></i>
+                            {% elif category == 'warning' %}<i class="fa-solid fa-triangle-exclamation fs-4 me-3 text-warning"></i>
+                            {% else %}<i class="fa-solid fa-circle-info fs-4 me-3 text-info"></i>{% endif %}
+                            <div class="fw-medium">{{ message }}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    {% block wrapper %}
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+    {% endblock %}
+
+    {% if not hide_footer %}
+    <!-- Modern Footer -->
+    <footer class="mt-auto py-5 relative overflow-hidden">
+        <div class="container position-relative z-1 fade-in-section">
+            <div class="row pt-4">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; background: rgba(255,255,255,0.1); color: var(--accent-color);">
+                            <i class="fa-solid fa-leaf fs-5"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0 text-white">Health Nest</h4>
+                    </div>
+                    <p class="text-white-50 pe-md-4 mb-4">Redefining healthcare management with an elegant, patient-forward experience that brings providers and patients closer together.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:40px;height:40px;"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:40px;height:40px;"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:40px;height:40px;"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h6 class="text-uppercase fw-bold mb-4 text-white">Platform</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3"><a href="#" class="text-white-50 text-decoration-none hover-white transition">About Us</a></li>
+                        <li class="mb-3"><a href="#" class="text-white-50 text-decoration-none hover-white transition">Find Doctors</a></li>
+                        <li class="mb-3"><a href="#" class="text-white-50 text-decoration-none hover-white transition">Departments</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none hover-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
+                    <h6 class="text-uppercase fw-bold mb-4 text-white">Legal & Terms</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3"><a href="#" class="text-white-50 text-decoration-none hover-white transition">Privacy Policy</a></li>
+                        <li class="mb-3"><a href="#" class="text-white-50 text-decoration-none hover-white transition">Terms of Service</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none hover-white transition">Hipaa Compliance</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h6 class="text-uppercase fw-bold mb-4 text-white">Get in Touch</h6>
+                    <ul class="list-unstyled text-white-50 mb-0">
+                        <li class="mb-3 d-flex"><i class="fa-solid fa-location-dot mt-1 me-3 text-accent"></i> <span>100 HealthWay Plaza,<br>Wellness City, CA 90210</span></li>
+                        <li class="mb-3 d-flex align-items-center"><i class="fa-solid fa-envelope me-3 text-accent"></i> support@healthnest.com</li>
+                        <li class="d-flex align-items-center"><i class="fa-solid fa-phone me-3 text-accent"></i> 1-800-HEAL-NEST</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-top border-secondary mt-5 pt-4 text-center text-white-50">
+                <small>&copy; 2024 Health Nest Systems. All Rights Reserved.</small>
+            </div>
+        </div>
+        
+        <!-- Background graphics -->
+        <i class="fa-solid fa-briefcase-medical position-absolute text-white" style="font-size: 300px; opacity: 0.03; right: -50px; bottom: -50px; transform: rotate(-15deg);"></i>
+    </footer>
+    
+    <style>
+        .hover-white:hover { color: #fff !important; }
+        .text-accent { color: var(--accent-color); }
+        .transition { transition: all 0.3s ease; }
+    </style>
+    {% endif %}
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" title="Go to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+    <!-- Profile Crop Modal & Form -->
+    <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-light pb-2">
+                    <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-crop-simple me-2 text-accent"></i>Adjust Profile Picture</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center bg-light">
+                    <div class="img-container w-100 mx-auto bg-white rounded-3 shadow-sm border" style="max-height: 400px; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                        <img id="imageToCrop" src="" alt="Picture" style="max-width: 100%;">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light pt-0 d-flex justify-content-between">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-white border shadow-sm btn-sm rounded-circle" style="width: 36px; height: 36px;" id="zoomInBtn" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button type="button" class="btn btn-white border shadow-sm btn-sm rounded-circle" style="width: 36px; height: 36px;" id="zoomOutBtn" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button type="button" class="btn btn-white border shadow-sm btn-sm rounded-circle" style="width: 36px; height: 36px;" id="rotateBtn" title="Rotate"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-light rounded-pill px-4 border" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-accent rounded-pill px-4 shadow-sm text-white position-relative" id="cropSaveBtn">
+                            Save Selection
+                            <span class="spinner-border spinner-border-sm position-absolute top-50 end-0 translate-middle-y me-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form id="profileUploadForm" action="{{ url_for('auth.upload_profile') }}" method="POST" enctype="multipart/form-data" class="d-none">
+        <input type="file" id="profileFileInput" name="profile_image" accept="image/png, image/jpeg, image/jpg">
+    </form>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let cropper;
+            const fileInput = document.getElementById('profileFileInput');
+            const imageToCrop = document.getElementById('imageToCrop');
+            const cropModalObj = document.getElementById('cropModal');
+            const cropModal = new bootstrap.Modal(cropModalObj);
+            
+            // Listen to any element that triggers upload (e.g. avatar overlay clicked)
+            document.body.addEventListener('click', function(e) {
+                if(e.target.closest('.trigger-profile-upload')) {
+                    fileInput.click();
+                }
+            });
+
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+                const file = files[0];
+                
+                // Validate size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Image exceeds 2MB limit. Please choose a smaller image.');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                const done = function(url) {
+                    fileInput.value = ''; 
+                    imageToCrop.src = url;
+                    cropModal.show();
+                };
+                
+                const reader = new FileReader();
+                reader.onload = function(e) { done(reader.result); };
+                reader.readAsDataURL(file);
+            });
+
+            cropModalObj.addEventListener('shown.bs.modal', function() {
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    background: false,
+                    autoCropArea: 0.8,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            });
+
+            cropModalObj.addEventListener('hidden.bs.modal', function() {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                imageToCrop.src = '';
+            });
+
+            document.getElementById('zoomInBtn')?.addEventListener('click', () => cropper?.zoom(0.1));
+            document.getElementById('zoomOutBtn')?.addEventListener('click', () => cropper?.zoom(-0.1));
+            document.getElementById('rotateBtn')?.addEventListener('click', () => cropper?.rotate(45));
+
+            document.getElementById('cropSaveBtn').addEventListener('click', function() {
+                if (!cropper) return;
+                const btn = this;
+                
+                // Show loading state
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
+                btn.disabled = true;
+
+                cropper.getCroppedCanvas({
+                    width: 300,
+                    height: 300,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                }).toBlob(function(blob) {
+                    const formData = new FormData();
+                    formData.append('profile_image', blob, 'profile.jpg');
+
+                    fetch("{{ url_for('auth.upload_profile') }}", {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                        } else if(response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('Failed to upload image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Upload failed.');
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        cropModal.hide();
+                    });
+                }, 'image/jpeg', 0.9);
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

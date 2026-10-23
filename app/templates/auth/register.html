@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% set hide_navbar = True %}
+{% set hide_footer = True %}
+
+{% block title %}Register - HospiCare{% endblock %}
+
+{% block wrapper %}
+<div class="auth-split flex-row-reverse">
+    <!-- Right Side: Image for Register (Reverse split) -->
+    <div class="auth-image" style="background-image: url('https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&q=80&w=1000');">
+        <div class="h-100 d-flex flex-column justify-content-end p-5" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+            <div class="text-white mb-5 fade-in-section is-visible">
+                <a href="{{ url_for('auth.index') }}" class="text-white text-decoration-none h3 fw-bold mb-4 d-block"><i class="fa-solid fa-heart-pulse text-primary"></i> HospiCare</a>
+                <h2 class="display-5 fw-bold mb-3">Join Our Network</h2>
+                <p class="lead opacity-75">Sign up today and experience the future of digital healthcare seamlessly.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Left Side: Form -->
+    <div class="auth-form-container">
+        <div class="auth-card fade-in-section is-visible py-4 my-3" style="max-height: 95vh; overflow-y: auto;">
+            
+            <div class="text-center mb-4 d-lg-none">
+                <a href="{{ url_for('auth.index') }}" class="text-dark text-decoration-none h3 fw-bold"><i class="fa-solid fa-heart-pulse text-primary"></i> HospiCare</a>
+            </div>
+
+            <h3 class="fw-bold mb-2">Create Account</h3>
+            <p class="text-muted mb-4">Fill in your details to get started with HospiCare.</p>
+
+            <form method="POST" action="" class="needs-validation" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label fw-semibold small text-muted") }}
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent text-muted"><i class="fa-regular fa-user"></i></span>
+                        {% if form.name.errors %}
+                            {{ form.name(class="form-control is-invalid", placeholder="John Doe") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}<span>{{ error }}</span>{% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.name(class="form-control", placeholder="John Doe", required=True) }}
+                            <div class="invalid-feedback">Please enter your full name.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label fw-semibold small text-muted") }}
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent text-muted"><i class="fa-regular fa-envelope"></i></span>
+                        {% if form.email.errors %}
+                            {{ form.email(class="form-control is-invalid", placeholder="name@example.com") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.email(class="form-control", placeholder="name@example.com", required=True) }}
+                            <div class="invalid-feedback">Please enter a valid email.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-6 mb-3 mb-sm-0">
+                        {{ form.password.label(class="form-label fw-semibold small text-muted") }}
+                        <div class="input-group password-container">
+                            <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-lock"></i></span>
+                            {% if form.password.errors %}
+                                {{ form.password(class="form-control password-input is-invalid", placeholder="••••••••") }}
+                                <div class="invalid-feedback">{% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                            {% else %}
+                                {{ form.password(class="form-control password-input", placeholder="••••••••", required=True) }}
+                                <div class="invalid-feedback">Required.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.confirm_password.label(class="form-label fw-semibold small text-muted") }}
+                        <div class="input-group password-container">
+                            <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-lock"></i></span>
+                            {% if form.confirm_password.errors %}
+                                {{ form.confirm_password(class="form-control is-invalid", placeholder="••••••••") }}
+                                <div class="invalid-feedback">{% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                            {% else %}
+                                {{ form.confirm_password(class="form-control", placeholder="••••••••", required=True) }}
+                                <div class="invalid-feedback">Required.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    {{ form.role.label(class="form-label fw-semibold small text-muted") }}
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-user-tag"></i></span>
+                        {% if form.role.errors %}
+                            {{ form.role(class="form-select is-invalid", id="roleSelect") }}
+                            <div class="invalid-feedback">{% for error in form.role.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                        {% else %}
+                            {{ form.role(class="form-select", id="roleSelect", required=True) }}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Doctor Specific Fields (Hidden by Default) -->
+                <div id="doctorFields" style="display: none;" class="bg-light p-3 rounded-3 mb-4 border fade-in-section is-visible">
+                    <h6 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-stethoscope me-1"></i> Doctor Credentials</h6>
+                    <div class="mb-3">
+                        {{ form.specialization.label(class="form-label fw-semibold small text-muted") }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-notes-medical"></i></span>
+                            {{ form.specialization(class="form-control", placeholder="e.g. Cardiology, Neurology") }}
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        {{ form.experience.label(class="form-label fw-semibold small text-muted") }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent text-muted"><i class="fa-solid fa-briefcase-medical"></i></span>
+                            {{ form.experience(class="form-control", placeholder="e.g. 5", type="number", min="0") }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid mb-4 pt-2">
+                    {{ form.submit(class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-2") }}
+                </div>
+            </form>
+            
+            <p class="text-center text-muted small mb-0">
+                Already have an account? <a href="{{ url_for('auth.login') }}" class="fw-bold text-decoration-none">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('roleSelect');
+    const doctorFields = document.getElementById('doctorFields');
+    
+    function toggleDoctorFields() {
+        if (roleSelect.value === 'doctor') {
+            doctorFields.style.display = 'block';
+            doctorFields.classList.add('animate__animated', 'animate__fadeIn');
+        } else {
+            doctorFields.style.display = 'none';
+            doctorFields.classList.remove('animate__animated', 'animate__fadeIn');
+        }
+    }
+    
+    // Initial check on load
+    toggleDoctorFields();
+    
+    // Listen for changes
+    roleSelect.addEventListener('change', toggleDoctorFields);
+});
+</script>
+{% endblock %}

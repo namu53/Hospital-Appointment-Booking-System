@@ -1,0 +1,77 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Book Appointment{% endblock %}
+{% block dashboard_title %}Book Appointment{% endblock %}
+
+{% block sidebar_menu %}
+<a href="{{ url_for('patient.dashboard') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-house fa-fw me-2"></i> Dashboard Overview</a>
+<a href="{{ url_for('patient.find_doctors') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-stethoscope fa-fw me-2"></i> Find Doctors</a>
+<a href="{{ url_for('patient.my_appointments') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-calendar-check fa-fw me-2"></i> My Appointments</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 fade-in-section is-visible">
+        <div class="card border-0 shadow rounded-4 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-primary text-white p-4" style="background: linear-gradient(135deg, var(--primary-color), #0a58ca);">
+                <div class="d-flex align-items-center">
+                    <div class="position-relative">
+                        <img src="https://ui-avatars.com/api/?name=Dr+{{ doctor.user.name }}&background=fff&color=0D8ABC&size=80&bold=true" class="rounded-circle shadow-sm border border-3 border-white me-4" alt="Doctor">
+                        <span class="position-absolute bottom-0 end-0 bg-success border border-white border-2 rounded-circle p-1 me-4 mb-1" style="width: 15px; height: 15px;" title="Available"></span>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Dr. {{ doctor.user.name }}</h4>
+                        <p class="mb-0 opacity-75"><i class="fa-solid fa-stethoscope me-1"></i> {{ doctor.specialization }} • {{ doctor.experience }} yrs experience</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Body -->
+            <div class="card-body p-4 p-md-5">
+                <div class="alert alert-primary bg-primary bg-opacity-10 border-0 rounded-3 mb-4 d-flex align-items-center">
+                    <i class="fa-solid fa-info-circle fs-3 text-primary me-3 pt-1"></i>
+                    <div>
+                        <h6 class="fw-bold text-primary mb-1">Secure Your Slot</h6>
+                        <small class="text-primary opacity-75">Please select your preferred date and time. Availability may vary.</small>
+                    </div>
+                </div>
+
+                <form method="POST" action="" class="needs-validation" novalidate>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label for="date" class="form-label fw-bold small text-muted text-uppercase">Select Date</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white text-muted border-end-0"><i class="fa-regular fa-calendar"></i></span>
+                                <input type="date" class="form-control border-start-0 ps-0" id="date" name="date" required>
+                                <div class="invalid-feedback">Please choose a valid date.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="time" class="form-label fw-bold small text-muted text-uppercase">Select Time</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white text-muted border-end-0"><i class="fa-regular fa-clock"></i></span>
+                                <input type="time" class="form-control border-start-0 ps-0" id="time" name="time" required>
+                                <div class="invalid-feedback">Please select a time slot.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-sm-row gap-3 pt-3 border-top mt-5">
+                        <a href="{{ url_for('patient.find_doctors') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-4 fw-bold order-2 order-sm-1 flex-grow-1 flex-sm-grow-0">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm order-1 order-sm-2 flex-grow-1"><i class="fa-solid fa-paper-plane me-2"></i> Confirm Booking Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum date to today
+    document.addEventListener('DOMContentLoaded', function() {
+        var today = new Date().toISOString().split('T')[0];
+        document.getElementById("date").setAttribute('min', today);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'admin/layout.html' %}
+
+{% block header_title %}Patient Management{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex pt-4 flex-wrap gap-4 justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">All Patients</h3>
+        <div class="flex flex-wrap gap-2">
+            <select id="filterGender" class="py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <option value="">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+            <select id="filterBloodGroup" class="py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <option value="">All Blood</option>
+                <option value="a+">A+</option>
+                <option value="a-">A-</option>
+                <option value="b+">B+</option>
+                <option value="b-">B-</option>
+                <option value="ab+">AB+</option>
+                <option value="ab-">AB-</option>
+                <option value="o+">O+</option>
+                <option value="o-">O-</option>
+            </select>
+            <div class="relative">
+                <input type="text" id="searchPatients" placeholder="Search name or phone..." class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400"></i>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                    <th class="p-4 font-medium">ID</th>
+                    <th class="p-4 font-medium">Name</th>
+                    <th class="p-4 font-medium">Gender/Age</th>
+                    <th class="p-4 font-medium">Phone</th>
+                    <th class="p-4 font-medium">Blood</th>
+                    <th class="p-4 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700" id="patientsTableBody">
+                {% for patient in patients %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors patient-row" 
+                    data-name="{{ patient.user.name | lower }}" 
+                    data-phone="{{ patient.phone or patient.contact or '' }}"
+                    data-gender="{{ patient.gender | lower if patient.gender else '' }}"
+                    data-bg="{{ patient.blood_group | lower if patient.blood_group else '' }}">
+                    <td class="p-4 text-sm text-gray-900 dark:text-white">#{{ patient.id }}</td>
+                    <td class="p-4 text-sm font-medium text-gray-900 dark:text-white flex items-center gap-3">
+                        {% if patient.profile_image %}
+                        <img src="{{ url_for('static', filename=patient.profile_image) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ patient.user.name }}&background=e5e7eb&color=374151&size=64" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600">
+                        {% endif %}
+                        {{ patient.user.name }}
+                    </td>
+                    <td class="p-4 text-sm text-gray-500 dark:text-gray-400">
+                        {{ patient.gender or '-' }} / {{ patient.age or '-' }}
+                    </td>
+                    <td class="p-4 text-sm text-gray-500 dark:text-gray-400">{{ patient.phone or patient.contact or '-' }}</td>
+                    <td class="p-4 text-sm text-gray-500 dark:text-gray-400">
+                        {% if patient.blood_group %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs font-semibold rounded-full">{{ patient.blood_group }}</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-sm text-right space-x-2">
+                        <a href="{{ url_for('admin.patient_details', patient_id=patient.id) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1 bg-blue-50 dark:bg-blue-900/50 px-3 py-1.5 rounded-md text-xs font-medium" title="View Details">
+                            <i class="fa-solid fa-eye me-1"></i> View
+                        </a>
+                        <form action="{{ url_for('admin.delete_patient', patient_id=patient.id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to completely delete this patient and their account? This action cannot be undone.');">
+                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400 transition-colors p-1 ml-1" title="Delete Patient">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr id="emptyRow">
+                    <td colspan="6" class="p-8 text-center text-gray-500 dark:text-gray-400">No patients found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Simple Pagination Footer -->
+    <div class="p-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+        <span id="showingCount">Showing {{ patients|length }} patients</span>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchPatients');
+    const genderSelect = document.getElementById('filterGender');
+    const bgSelect = document.getElementById('filterBloodGroup');
+    const rows = document.querySelectorAll('tbody tr.patient-row');
+    const showingCount = document.getElementById('showingCount');
+
+    function filterTable() {
+        const query = searchInput.value.toLowerCase();
+        const gender = genderSelect.value;
+        const bg = bgSelect.value;
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const phone = row.getAttribute('data-phone');
+            const rowGender = row.getAttribute('data-gender');
+            const rowBg = row.getAttribute('data-bg');
+
+            const matchesSearch = name.includes(query) || phone.includes(query);
+            const matchesGender = gender === "" || rowGender === gender;
+            const matchesBg = bg === "" || rowBg === bg;
+
+            if (matchesSearch && matchesGender && matchesBg) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        if (showingCount) {
+             showingCount.textContent = `Showing ${visibleCount} patient${visibleCount !== 1 ? 's' : ''}`;
+        }
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    genderSelect.addEventListener('change', filterTable);
+    bgSelect.addEventListener('change', filterTable);
+});
+</script>
+{% endblock %}

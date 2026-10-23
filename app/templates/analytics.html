@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Healthcare Analytics - Health Nest{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-color);">
+    <div class="container py-4 fade-in-section is-visible">
+        <div class="text-center mb-5">
+            <h6 class="text-uppercase fw-bold mb-2" style="color: var(--accent-color); letter-spacing: 1.5px;">Platform Intelligence</h6>
+            <h2 class="display-5 fw-bold mb-3 text-dark">Real-Time Health Analytics</h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">Explore high-level insights into patient demographics, disease distribution, and hospital admission rates.</p>
+        </div>
+
+        <!-- Analytics Charts Section -->
+        <div class="row g-4 mb-4">
+            <!-- Line/Bar Chart (Admissions vs Discharges) -->
+            <div class="col-lg-8">
+                <div class="card shadow-soft border-0 rounded-4 h-100">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-hospital-user text-primary me-2"></i> Monthly Inpatient Flow (6 Months)</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div style="position: relative; height: 350px; width: 100%;">
+                            <canvas id="flowChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Doughnut Chart (Disease Distribution) -->
+            <div class="col-lg-4">
+                <div class="card shadow-soft border-0 rounded-4 h-100">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-virus-covid text-danger me-2"></i> Common Diagnoses</h6>
+                    </div>
+                    <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="diseaseChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Polar Area Chart (Age Demographics) -->
+            <div class="col-12">
+                <div class="card shadow-soft border-0 rounded-4 h-100">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-users text-warning me-2"></i> Patient Demographics by Age</h6>
+                    </div>
+                    <div class="card-body p-4 d-flex justify-content-center">
+                        <div style="position: relative; height: 400px; width: 100%; max-width: 600px;">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Chart.defaults.font.family = 'Inter';
+        Chart.defaults.color = '#8ea1b4';
+        
+        // Advanced Tooltip styling
+        const tooltipOptions = {
+            backgroundColor: 'rgba(15, 32, 39, 0.95)',
+            titleColor: '#fff',
+            bodyColor: '#e2e8f0',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 14,
+            cornerRadius: 12,
+            titleFont: { size: 15, family: 'Inter', weight: 'bold' },
+            bodyFont: { size: 14, family: 'Inter' },
+            displayColors: true,
+            boxPadding: 6,
+            usePointStyle: true,
+            bodySpacing: 8
+        };
+
+        // 1. Monthly Flow Chart (Admissions vs Discharges)
+        var ctxFlow = document.getElementById('flowChart').getContext('2d');
+        let monthlyLabels = {{ monthly_labels | tojson | safe }};
+        let admissionsData = {{ admissions_data | tojson | safe }};
+        let dischargesData = {{ discharges_data | tojson | safe }};
+
+        new Chart(ctxFlow, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: 'Admissions',
+                        data: admissionsData,
+                        backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                        borderRadius: 6,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Discharges',
+                        data: dischargesData,
+                        type: 'line',
+                        borderColor: '#198754',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#198754',
+                        pointBorderWidth: 3,
+                        pointRadius: 6,
+                        pointHoverRadius: 9,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                animation: { duration: 1500, easing: 'easeOutQuart' },
+                plugins: { 
+                    legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+                    tooltip: tooltipOptions
+                }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                        border: { display: false }
+                    }, 
+                    x: { 
+                        grid: { display: false },
+                        border: { display: false }
+                    } 
+                } 
+            }
+        });
+
+        // 2. Realistic 3D-styled Doughnut Chart (Disease Distribution)
+        var ctxDisease = document.getElementById('diseaseChart').getContext('2d');
+        let diseaseLabels = {{ disease_labels | tojson | safe }};
+        let diseaseData = {{ disease_data | tojson | safe }};
+        
+        let colorPalette = [
+            'rgba(220, 53, 69, 0.85)',   // Red
+            'rgba(253, 126, 20, 0.85)',  // Orange
+            'rgba(255, 193, 7, 0.85)',   // Yellow
+            'rgba(25, 135, 84, 0.85)',   // Green
+            'rgba(13, 202, 240, 0.85)',  // Cyan
+            'rgba(111, 66, 193, 0.85)'   // Purple
+        ];
+        
+        new Chart(ctxDisease, {
+            type: 'doughnut',
+            data: {
+                labels: diseaseLabels,
+                datasets: [{
+                    data: diseaseData,
+                    backgroundColor: colorPalette,
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 12
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                cutout: '72%',
+                animation: { animateScale: true, animateRotate: true, duration: 2000, easing: 'easeOutBounce' },
+                plugins: { 
+                    tooltip: tooltipOptions,
+                    legend: { display: false } // Hide to save space, tooltips cover it
+                } 
+            }
+        });
+
+        // 3. Polar Area Chart (Age Demographics)
+        var ctxAge = document.getElementById('ageChart').getContext('2d');
+        let ageLabels = {{ age_labels | tojson | safe }};
+        let ageData = {{ age_data | tojson | safe }};
+        
+        let polarPalette = [
+            'rgba(13, 110, 253, 0.7)',
+            'rgba(25, 135, 84, 0.7)',
+            'rgba(255, 193, 7, 0.7)',
+            'rgba(220, 53, 69, 0.7)',
+            'rgba(13, 202, 240, 0.7)'
+        ];
+
+        new Chart(ctxAge, {
+            type: 'polarArea',
+            data: {
+                labels: ageLabels,
+                datasets: [{
+                    label: 'Patient Count',
+                    data: ageData,
+                    backgroundColor: polarPalette,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverBackgroundColor: polarPalette.map(c => c.replace('0.7', '0.9'))
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                animation: { duration: 1800, easing: 'easeOutExpo' },
+                plugins: { 
+                    legend: { position: 'right', labels: { usePointStyle: true, padding: 20, font: {weight: 'bold'} } },
+                    tooltip: tooltipOptions
+                },
+                scales: {
+                    r: {
+                        ticks: { backdropColor: 'transparent', color: '#6c757d' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

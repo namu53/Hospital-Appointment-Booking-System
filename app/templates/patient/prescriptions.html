@@ -1,0 +1,74 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}My Prescriptions{% endblock %}
+{% block dashboard_title %}My Prescriptions{% endblock %}
+
+{% block sidebar_menu %}
+<a href="{{ url_for('patient.dashboard') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-house fa-fw me-2"></i> Dashboard Overview</a>
+<a href="{{ url_for('patient.find_doctors') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-stethoscope fa-fw me-2"></i> Find Doctors</a>
+<a href="{{ url_for('patient.my_appointments') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-calendar-check fa-fw me-2"></i> My Appointments</a>
+<a href="{{ url_for('patient.documents') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-file-medical fa-fw me-2"></i> Medical Documents</a>
+<a href="{{ url_for('patient.prescriptions') }}" class="list-group-item list-group-item-action border-0 active py-3"><i class="fa-solid fa-pills fa-fw me-2"></i> Prescriptions</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row g-4 fade-in-section is-visible">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white py-4 px-4 border-bottom d-flex align-items-center">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-prescription text-primary me-2"></i> Prescriptions from Doctors</h5>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    {% for presc in prescriptions %}
+                    <div class="col-md-6 border-bottom border-end-md">
+                        <div class="p-4 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3 inline-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-file-prescription fa-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold text-dark">Dr. {{ presc.doctor.user.name }}</h6>
+                                        <span class="badge bg-light text-dark border">{{ presc.doctor.specialization }}</span>
+                                    </div>
+                                </div>
+                                <a href="{{ url_for('patient.download_prescription', presc_id=presc.id) }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm hover-scale small fw-bold">
+                                    <i class="fa-solid fa-download me-1"></i> PDF
+                                </a>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                {% if presc.notes %}
+                                <div class="bg-light rounded-3 p-3 mb-3 small text-muted border border-light">
+                                    <i class="fa-solid fa-quote-left opacity-50 me-1"></i> {{ presc.notes }}
+                                </div>
+                                {% endif %}
+                                <p class="mb-0 text-muted small"><i class="fa-regular fa-clock me-1"></i> Issued: {{ presc.created_at.strftime('%b %d, %Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12 text-center py-5">
+                        <div class="text-muted mb-3"><i class="fa-solid fa-pills fa-3x opacity-25"></i></div>
+                        <h5 class="fw-bold text-muted">No prescriptions found</h5>
+                        <p class="text-muted small">You haven't received any prescriptions from a doctor yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.hover-scale { transition: transform 0.2s ease; }
+.hover-scale:hover { transform: scale(1.05); }
+.border-end-md {
+    border-right: 1px solid #dee2e6;
+}
+@media (max-width: 768px) {
+    .border-end-md { border-right: none !important; }
+}
+</style>
+{% endblock %}

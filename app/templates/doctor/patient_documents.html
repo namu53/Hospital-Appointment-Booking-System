@@ -1,0 +1,115 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Patient Documents - {{ patient.user.name }}{% endblock %}
+{% block dashboard_title %}Patient File: {{ patient.user.name }}{% endblock %}
+
+
+
+{% block sidebar_menu %}
+<a href="{{ url_for('doctor.dashboard') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-house fa-fw me-2"></i> Dashboard Overview</a>
+<a href="{{ url_for('doctor.appointments') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-calendar-check fa-fw me-2"></i> Manage Appointments</a>
+<a href="{{ url_for('doctor.profile') }}" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-user-doctor fa-fw me-2"></i> My Profile</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row g-4 mb-4 fade-in-section is-visible">
+    <!-- Patient Info Card -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://ui-avatars.com/api/?name={{ patient.user.name }}&background=e9ecef&color=495057&size=64" class="rounded-circle me-4 shadow-sm" alt="Patient">
+                    <div>
+                        <h4 class="fw-bold mb-1 mb-0 text-dark">{{ patient.user.name }}</h4>
+                        <div class="text-muted small">
+                            <span class="me-3"><i class="fa-solid fa-person me-1"></i> Age: {{ patient.age or 'N/A' }}, Gender: {{ patient.gender or 'N/A' }}</span>
+                            <span class="me-3"><i class="fa-solid fa-envelope me-1"></i> {{ patient.user.email }}</span>
+                            <span><i class="fa-solid fa-phone me-1"></i> {{ patient.contact or 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('doctor.appointments') }}" class="btn btn-outline-secondary rounded-pill fw-bold px-4 hover-scale shadow-sm"><i class="fa-solid fa-arrow-left me-2"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 fade-in-section is-visible" style="transition-delay: 0.1s;">
+    <!-- Patient Documents -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4 h-100 mt-0">
+            <div class="card-header bg-white py-4 px-4 border-bottom d-flex align-items-center">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-folder-open text-primary me-2"></i> Uploaded Documents</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for doc in documents %}
+                    <div class="list-group-item p-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fa-solid fa-file-medical fa-2x text-primary opacity-75 me-3"></i>
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark">{{ doc.filename }}</h6>
+                                <p class="mb-0 text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ doc.upload_date.strftime('%b %d, %Y') }}</p>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('doctor.download_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm hover-scale" title="Download"><i class="fa-solid fa-download"></i></a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fa-regular fa-folder-open fa-3x text-muted opacity-25 mb-3"></i>
+                        <h6 class="fw-bold text-muted">No documents uploaded</h6>
+                        <p class="text-muted small">This patient hasn't uploaded any documents yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upload Prescription -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4 h-100 mt-0">
+            <div class="card-header bg-white py-4 px-4 border-bottom d-flex align-items-center">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-file-prescription text-success me-2"></i> Manage Prescriptions</h5>
+            </div>
+            <div class="card-body p-4">
+                <!-- Upload form -->
+                <form action="{{ url_for('doctor.upload_prescription', patient_id=patient.id) }}" method="POST" enctype="multipart/form-data" class="mb-4 p-4 bg-light rounded-4 border border-1 shadow-sm">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-plus-circle text-success me-1"></i> New Prescription</h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Prescription File (PDF)</label>
+                        <input class="form-control" type="file" name="prescription" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Notes / Instructions (Optional)</label>
+                        <textarea class="form-control" name="notes" rows="2" placeholder="e.g. Take 2 pills daily..."></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-success rounded-pill fw-bold px-4 shadow-sm hover-scale"><i class="fa-solid fa-upload me-2"></i> Upload Prescription</button>
+                    </div>
+                </form>
+                
+                <!-- History -->
+                <h6 class="fw-bold mb-3 mt-4 text-dark"><i class="fa-solid fa-clock-rotate-left text-muted me-2"></i> Previous Prescriptions</h6>
+                <div class="list-group">
+                    {% for presc in prescriptions %}
+                    <div class="list-group-item border-0 bg-light rounded-3 mb-2 p-3 d-flex justify-content-between align-items-start shadow-sm">
+                        <div class="mb-0 w-100">
+                            <span class="badge bg-success bg-opacity-10 text-success mb-2 border border-success border-opacity-25"><i class="fa-regular fa-calendar me-1"></i> {{ presc.created_at.strftime('%b %d, %Y') }}</span>
+                            <div class="small fw-semibold text-dark">{{ presc.notes|truncate(80) if presc.notes else 'No notes provided' }}</div>
+                            <div class="small text-muted mt-1"><i class="fa-solid fa-file-pdf me-1"></i> {{ presc.filename }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small text-center my-3 pb-2 opacity-50">No prescriptions issued yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.hover-scale { transition: transform 0.2s ease; }
+.hover-scale:hover { transform: scale(1.05); }
+</style>
+{% endblock %}

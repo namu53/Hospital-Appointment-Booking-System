@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Contact Us - Health Nest{% endblock %}
+
+{% block content %}
+<section class="py-5 position-relative overflow-hidden" style="min-height: 40vh; display: flex; align-items: center; background: url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat fixed;">
+    <div class="position-absolute w-100 h-100 top-0 start-0" style="background: rgba(15, 32, 39, 0.85);"></div>
+    <div class="container position-relative z-1 py-5 text-center fade-in-section is-visible">
+        <h1 class="display-4 fw-bold text-white mb-3">Contact <span class="text-accent" style="color: var(--accent-color);">Us</span></h1>
+        <p class="lead text-white-50 mx-auto" style="max-width: 600px;">We're here to help. Reach out directly and our support team will get back to you immediately.</p>
+    </div>
+</section>
+
+<section class="py-5 my-5 bg-color">
+    <div class="container fade-in-section is-visible">
+        <div class="row g-5">
+            <!-- Form Side -->
+            <div class="col-lg-7">
+                <div class="card card-modern p-5">
+                    <h3 class="fw-bold mb-4">Send a Message</h3>
+                    <form action="#" method="POST" class="needs-validation" novalidate onsubmit="event.preventDefault(); alert('Message sent successfully!');">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Full Name</label>
+                                <input type="text" class="form-control" required placeholder="John Doe">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Email Address</label>
+                                <input type="email" class="form-control" required placeholder="name@example.com">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold">Subject</label>
+                            <input type="text" class="form-control" required placeholder="How can we help?">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold">Message details</label>
+                            <textarea class="form-control" rows="5" required placeholder="Type your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm">Send Message</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Info Side -->
+            <div class="col-lg-5">
+                <div class="card card-modern p-5 h-100" style="background: var(--primary-gradient); color: white;">
+                    <h3 class="fw-bold mb-4">Contact Information</h3>
+                    <p class="mb-5 opacity-75">Prefer to reach us via phone or email? Feel free to use the details below.</p>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px; background: rgba(255,255,255,0.1);">
+                            <i class="fa-solid fa-location-dot fs-5 text-accent" style="color: var(--accent-color);"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Office Location</h6>
+                            <span class="opacity-75 small">100 HealthWay Plaza,<br>Wellness City, CA 90210</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px; background: rgba(255,255,255,0.1);">
+                            <i class="fa-solid fa-phone fs-5 text-accent" style="color: var(--accent-color);"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Helpline</h6>
+                            <span class="opacity-75 small">1-800-HEAL-NEST<br>(Mon - Fri, 8am to 8pm)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px; background: rgba(255,255,255,0.1);">
+                            <i class="fa-solid fa-envelope fs-5 text-accent" style="color: var(--accent-color);"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Email Support</h6>
+                            <span class="opacity-75 small">support@healthnest.com<br>info@healthnest.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

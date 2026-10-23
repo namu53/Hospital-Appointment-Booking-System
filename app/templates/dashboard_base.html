@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block wrapper %}
+<div class="flex h-[calc(100vh-80px)] bg-gray-50 dark:bg-gray-900 overflow-hidden w-full">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="z-20 flex-shrink-0 hidden w-64 overflow-y-auto bg-gradient-to-b from-[#0f2027] via-[#203a43] to-[#2c5364] md:block shadow-2xl transition-all duration-300 relative border-r border-white/10">
+        <div class="py-8 flex flex-col items-center justify-center fade-in-section is-visible relative group">
+            {% block sidebar_profile %}
+            <div class="relative inline-block mb-3">
+                {% if current_user.role == 'doctor' and current_user.doctor_profile and current_user.doctor_profile.profile_image %}
+                <img src="{{ url_for('static', filename=current_user.doctor_profile.profile_image) }}" class="w-24 h-24 rounded-full object-cover border-[3px] border-white/80 shadow-lg transition-transform duration-300 group-hover:scale-105" alt="Profile">
+                {% elif current_user.role == 'patient' and current_user.patient_profile and current_user.patient_profile.profile_image %}
+                <img src="{{ url_for('static', filename=current_user.patient_profile.profile_image) }}" class="w-24 h-24 rounded-full object-cover border-[3px] border-white/80 shadow-lg transition-transform duration-300 group-hover:scale-105" alt="Profile">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ current_user.name }}&background=f5b942&color=fff&size=200" class="w-24 h-24 rounded-full object-cover border-[3px] border-white/80 shadow-lg" alt="Profile">
+                {% endif %}
+                
+                <button type="button" class="absolute bottom-0 right-0 w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center border-2 border-[#203a43] shadow-md hover:bg-yellow-500 transition-colors trigger-profile-upload" title="Update Profile Picture">
+                    <i class="fa-solid fa-camera text-xs pointer-events-none"></i>
+                </button>
+            </div>
+            
+            <h6 class="font-bold text-white tracking-wide text-lg mt-1">{% if current_user.role == 'doctor' %}Dr. {% endif %}{{ current_user.name }}</h6>
+            <span class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm shadow-sm">{{ current_user.role | capitalize }}</span>
+            {% endblock %}
+        </div>
+        
+        <div class="px-4 py-2 mt-2 border-t border-white/10">
+            <p class="text-[0.7rem] font-bold text-white/50 uppercase tracking-widest mb-3 pl-2">Navigation</p>
+            <div class="space-y-1 sidebar-menu-links">
+                {% block sidebar_menu %}{% endblock %}
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Page Content -->
+    <div class="flex flex-col flex-1 w-full overflow-y-auto bg-gray-50 dark:bg-[#0b1c24] transition-colors relative">
+        <header class="z-10 py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm md:hidden flex items-center justify-between px-6 sticky top-0 border-b border-gray-100 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white">{% block dashboard_title_mobi %}Dashboard{% endblock %}</h2>
+            <button class="p-2 bg-gradient-to-r from-primary-dark to-primary-light text-white rounded-lg shadow-sm focus:outline-none" onclick="document.getElementById('sidebar').classList.toggle('hidden')">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </header>
+        
+        <main class="h-full p-4 md:p-8">
+            <div class="max-w-7xl mx-auto">
+                <div class="hidden md:flex justify-between items-center mb-8 fade-in-section is-visible">
+                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-dark to-primary-light dark:from-white dark:to-gray-300">{% block dashboard_title %}Dashboard{% endblock %}</h2>
+                </div>
+                {% block dashboard_content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+/* Custom Sidebar Tailwind Injection */
+.sidebar-menu-links a {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+.sidebar-menu-links a:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    transform: translateX(4px);
+}
+.sidebar-menu-links a i {
+    color: rgba(255, 255, 255, 0.5) !important;
+    transition: color 0.2s;
+}
+.sidebar-menu-links a:hover i {
+    color: white !important;
+}
+.sidebar-menu-links a.active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+    font-weight: 600;
+    border-left: 3px solid var(--accent-color);
+}
+.sidebar-menu-links a.active i {
+    color: var(--accent-color) !important;
+}
+</style>
+{% endblock %}
